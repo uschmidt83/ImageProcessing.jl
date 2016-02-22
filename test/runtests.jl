@@ -1,5 +1,8 @@
 using ImageProcessing
+using Images
 using Base.Test
 
-# write your own tests here
-@test 1 == 1
+srand(123)
+
+include("blockproc.jl")
+include("filtering.jl")

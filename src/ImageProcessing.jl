@@ -1,5 +1,14 @@
 module ImageProcessing
 
-# package code goes here
+using Images
+using Base.Cartesian
 
-end # module
+include("blockproc.jl")
+include("filtering.jl")
+
+export
+  im2col,
+  im2col!,
+  imfiltermtx
+
+end
