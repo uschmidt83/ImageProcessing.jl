@@ -40,3 +40,33 @@ function imfiltermtx{T,N}(szimg::NTuple{N,Int}, k::AbstractArray{T,N}, border::A
 
   sparse(I,J,V,ncols,npixels)
 end
+
+
+
+"""
+```
+otf = psf2otf(psf, [outsize])
+```
+
+creates the optical transfer function (`otf`) from the provided point-spread function (`psf`).
+The tuple `outsize` can be used to specify the size of the `otf` array; by default, `outsize = size(psf)`.
+
+The convolution theorem relates convolution with the `psf` in the spatial domain to
+multiplication with the `otf` in the frequency domain:
+
+`Images.imfilter(x,Images.reflect(psf),"circular") ≈ real(ifft( fft(x) .* psf2otf(psf,size(x)) ))`
+
+This function is similar to Matlab's `psf2otf`.
+See http://www.mathworks.com/help/images/ref/psf2otf.html
+"""
+
+function psf2otf{T,N}(psf::AbstractArray{T,N}, outsz::NTuple{N,Int}=size(psf))
+  psfsz = size(psf)
+  if psfsz != outsz
+    pad = map(-,outsz,psfsz)
+    all(x -> x >= 0, pad) || throw(DimensionMismatch("psf too large for outsz."))
+    psf = padarray(psf,tuple(zeros(Int,N)...),pad,"value",T(0))
+  end
+  shift = map(x -> -floor(Int,x/2), psfsz)
+  fft(circshift(psf,shift))
+end

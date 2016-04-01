@@ -9,6 +9,7 @@ include("filtering.jl")
 export
   im2col,
   im2col!,
-  imfiltermtx
+  imfiltermtx,
+  psf2otf
 
 end
