@@ -2,7 +2,7 @@ x = randn(7,4,5)
 k = randn(5,1,4)
 
 
-# imfiltermtx
+## imfiltermtx
 
 for border in ("replicate", "circular", "reflect", "symmetric", "value", "inner")
   @test_approx_eq  imfilter(x,k,border)  imfiltermtx(size(x),k,border)*vec(x)
@@ -11,7 +11,8 @@ end
 @test_throws ArgumentError imfiltermtx(size(x),k,"value",1)
 
 
-# psf2otf
+
+## psf2otf
 
 @test_approx_eq  imfilter(x,Images.reflect(k),"circular")  real(ifft( fft(x) .* psf2otf(k,size(x)) ))
 @test psf2otf(k) == psf2otf(k,size(k))
