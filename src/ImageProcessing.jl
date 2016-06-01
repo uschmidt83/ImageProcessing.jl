@@ -12,6 +12,7 @@ export
   col2im,
   col2im!,
   imfiltermtx,
-  psf2otf
+  psf2otf,
+  padforfilter
 
 end

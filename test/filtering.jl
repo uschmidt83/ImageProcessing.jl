@@ -17,3 +17,11 @@ end
 @test_approx_eq  imfilter(x,Images.reflect(k),"circular")  real(ifft( fft(x) .* psf2otf(k,size(x)) ))
 @test psf2otf(k) == psf2otf(k,size(k))
 @test_throws DimensionMismatch psf2otf(k,(size(k)[1]-1,size(k)[2:end]...))
+
+
+
+## padforfilter
+
+for border in ("replicate", "circular", "reflect", "symmetric", "value", "inner")
+  @test imfilter(x,k,border) == imfilter(padforfilter(x,size(k),border),k,"inner")
+end

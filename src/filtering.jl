@@ -13,20 +13,10 @@ Note that boundary condition `"value"` does not support any `value`s other than 
 """
 
 function imfiltermtx{T,N}(szimg::NTuple{N,Int}, k::AbstractArray{T,N}, border::AbstractString="replicate", value=zero(T))
+  border != "value" || convert(T,value) == zero(T) || throw(ArgumentError("Only value '0' supported for border condition 'value'."))
   npixels = prod(szimg)
   idximg = reshape(1:npixels,szimg)
-  if border in ("replicate", "circular", "reflect", "symmetric", "value")
-    if border == "value"
-      value = convert(T, value)
-      value == zero(T) || throw(ArgumentError("Only value '0' supported for border condition 'value'."))
-    end
-    prepad  = ntuple(d->div(size(k,d)-1, 2), N)
-    postpad = ntuple(d->div(size(k,d),   2), N)
-    idximg = padarray(idximg, prepad, postpad, border, value)
-  elseif border == "inner" # nothing to do    
-  else
-    throw(ArgumentError("Border condition '$border' not supported."))
-  end
+  idximg = padforfilter(idximg, size(k), border, value)
 
   cols::Matrix{Int} = im2col(idximg,size(k),"sliding")
   nelems,ncols  = size(cols)
@@ -69,4 +59,30 @@ function psf2otf{T,N}(psf::AbstractArray{T,N}, outsz::NTuple{N,Int}=size(psf))
   end
   shift = map(x -> -floor(Int,x/2), psfsz)
   fft(circshift(psf,shift))
+end
+
+
+
+"""
+```
+imgpad = padforfilter(img, kernelsize, [border, value])
+```
+
+returns a padded copy of array `img` such that the following holds true:
+
+`imfilter(padforfilter(img,size(kernel),border,value),kernel,"inner") == imfilter(img,kernel,border,value)`
+
+See `Images.imfilter` for an explanation of options `border` and `value`.
+"""
+
+function padforfilter{T,N}(A::AbstractArray{T,N}, sz::NTuple{N,Int}, border::AbstractString="replicate", value=zero(T))
+  if border in ("replicate", "circular", "reflect", "symmetric", "value")
+    prepad  = ntuple(d->div(sz[d]-1, 2), N)
+    postpad = ntuple(d->div(sz[d],   2), N)
+    A = padarray(A, prepad, postpad, border, convert(T,value))
+  elseif border == "inner" # nothing to do    
+  else
+    throw(ArgumentError("Border condition '$border' not supported."))
+  end
+  A
 end
